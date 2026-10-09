@@ -46,9 +46,15 @@ assert.equal(cues[1].id,1);
 const response = rows => ({status:200,responseText:JSON.stringify({candidates:[{content:{parts:[{text:JSON.stringify(rows)}]}}]})});
 (async () => {
   reply = response([{id:0,text:'안녕하세요'},{id:1,text:'다음'}]);
-  assert.equal((await sandbox.translate(cues,[], 'test-key','test-model')).length,2);
+  assert.equal((await sandbox.translate(cues,[], 'test-key','test-model')).rows.length,2);
   reply = response([{id:0,text:'안녕'},{id:0,text:'중복'}]);
-  await assert.rejects(sandbox.translate(cues,[],'test-key','test-model'),/개수/);
+  assert.equal((await sandbox.translate(cues,[],'test-key','test-model')).missing.length,2);
+  const recovered = sandbox.reconcileRows([{id:50},{id:53},{id:60}],[{id:0,text:'유효'},{id:1,text:''},{id:2,text:'중복'},{id:2,text:'중복'},{id:99,text:'범위 밖'}]);
+  assert.equal(recovered.rows[0].id,50);
+  assert.equal(recovered.missing.length,2);
+  const retryContext = sandbox.translationContext(metadata,contextCues,[contextCues[15],contextCues[18]],{16:'이미 번역된 문장'});
+  assert.equal(retryContext.surroundingDialogue.find(c => c.original === 'line 16').existingKorean,'이미 번역된 문장');
+  assert.equal(retryContext.surroundingDialogue.find(c => c.original === 'line 16').requested,false);
   reply = {status:429};
   await assert.rejects(sandbox.translate(cues,[],'test-key','test-model'),/한도/);
   let pages = 0;

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube AI 한국어 자막
 // @namespace    local.youtube.ai.ko
-// @version      0.1.6
+// @version      0.1.7
 // @updateURL    https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.meta.js
 // @downloadURL  https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.user.js
 // @author       J.S.Lee
@@ -48,10 +48,53 @@
   panel.append(playbackFeedback);
   const videoInfo = el('div', {style:'margin-top:8px;color:#aaa;line-height:1.4;max-height:90px;overflow:auto'});
   panel.append(videoInfo);
+  const panelBody = el('div', {id:'jslee-ai-panel-body'});
+  panelBody.append(...Array.from(panel.childNodes));
+  const panelTitle = panelBody.querySelector('strong');
+  const toggleButton = el('button', {type:'button','aria-controls':'jslee-ai-panel-body',class:'jslee-toggle'},
+    el('span', {class:'jslee-bar'}), el('span', {class:'jslee-bar'}), el('span', {class:'jslee-bar'}));
+  const stateLabel = el('span', {class:'jslee-state'}, '대기');
+  const header = el('div', {class:'jslee-header'},toggleButton,panelTitle,stateLabel);
+  panel.append(header,panelBody);
+  const style = el('style');
+  style.textContent = `
+    #jslee-ai-subtitles-panel .jslee-header{display:flex;align-items:center;gap:10px}
+    #jslee-ai-subtitles-panel .jslee-toggle{display:flex;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;padding:7px;background:transparent;border:0;border-radius:8px;cursor:pointer;flex-shrink:0}
+    #jslee-ai-subtitles-panel .jslee-toggle:hover{background:#ffffff15}
+    #jslee-ai-subtitles-panel .jslee-toggle:focus-visible{outline:2px solid #8dd8ff}
+    #jslee-ai-subtitles-panel .jslee-bar{display:block;width:22px;height:3px;border-radius:3px;background:white}
+    #jslee-ai-subtitles-panel .jslee-state{margin-left:auto;font-size:11px;color:#aaa;white-space:nowrap}
+    #jslee-ai-panel-body{margin-top:4px}
+    #jslee-ai-subtitles-panel[data-state=running] .jslee-bar{animation:jslee-progress 1.2s infinite}
+    #jslee-ai-subtitles-panel[data-state=running] .jslee-bar:nth-child(2){animation-delay:.2s}
+    #jslee-ai-subtitles-panel[data-state=running] .jslee-bar:nth-child(3){animation-delay:.4s}
+    #jslee-ai-subtitles-panel[data-state=running] .jslee-state{color:#75ddff}
+    #jslee-ai-subtitles-panel[data-state=complete] .jslee-bar{background:#ffe477;animation:jslee-glow 2.4s ease-in-out infinite}
+    #jslee-ai-subtitles-panel[data-state=complete] .jslee-state{color:#ffe477}
+    #jslee-ai-subtitles-panel[data-collapsed=true]{width:36px!important;padding:8px!important}
+    #jslee-ai-subtitles-panel[data-collapsed=true] .jslee-header>strong,#jslee-ai-subtitles-panel[data-collapsed=true] .jslee-state{display:none}
+    @keyframes jslee-progress{0%,65%,100%{background:#fff;box-shadow:none}25%{background:#65d9ff;box-shadow:0 0 8px #65d9ff99}45%{background:#a48bff;box-shadow:0 0 8px #a48bff99}}
+    @keyframes jslee-glow{0%,100%{box-shadow:0 0 3px #ffe47766;opacity:.8}50%{box-shadow:0 0 10px #ffe477cc,0 0 16px #ffc44466;opacity:1}}
+    @media(prefers-reduced-motion:reduce){#jslee-ai-subtitles-panel .jslee-bar{animation:none!important}#jslee-ai-subtitles-panel[data-state=running] .jslee-bar{background:#75ddff}}
+  `;
+  document.head.append(style);
+  function setIndicator(state) {
+    panel.dataset.state = state;
+    stateLabel.textContent = state === 'running' ? '번역 중' : state === 'complete' ? '번역 완료' : '대기';
+    toggleButton.title = `${panelBody.hidden ? '창 펼치기' : '창 접기'} · ${stateLabel.textContent}`;
+    toggleButton.setAttribute('aria-label',toggleButton.title);
+  }
+  function setCollapsed(collapsed) {
+    panel.dataset.collapsed = String(collapsed); panelBody.hidden = collapsed;
+    toggleButton.setAttribute('aria-expanded',String(!collapsed));
+    setIndicator(panel.dataset.state || 'idle');
+  }
+  toggleButton.onclick = () => { setCollapsed(!panelBody.hidden); GM_setValue('panelCollapsed',panelBody.hidden); };
+  setCollapsed(GM_getValue('panelCollapsed',false));
   document.body.append(panel);
-  const status = message => { panel.querySelector('[role=status]').textContent = message; };
+  const status = message => { panel.querySelector('[role=status]').textContent = message; if (message.startsWith('번역 완료')) setIndicator('complete'); };
   const videoId = () => new URL(location.href).searchParams.get('v');
-  const stop = () => { generation++; running = false; activeBatch.clear(); for (const req of pending) req.abort(); pending.clear(); };
+  const stop = () => { generation++; running = false; setIndicator('idle'); activeBatch.clear(); for (const req of pending) req.abort(); pending.clear(); };
   function cueFeedback(cue, time, translated, isRunning, isActive) {
     if (!cue || time >= cue.end || translated) return '';
     if (!isRunning) return '이 구간은 아직 번역되지 않았습니다.\n번역 시작 / 이어서를 눌러주세요.';
@@ -225,6 +268,7 @@
     const key = GM_getValue('apiKey', ''), model = normalizeModel(GM_getValue('model', DEFAULT_MODEL));
     if (!key) { settings(); return; }
     running = true;
+    setIndicator('running');
     const startedAt = Date.now(), samples = [], failures = new Map();
     const progress = () => {
       const completed = Object.keys(translations).length;
@@ -291,7 +335,7 @@
       }
       if (token === generation) status(`번역 완료 · ${cues.length}개 자막\n이번 실행 소요 ${Math.round((Date.now()-startedAt)/1000)}초`);
     } catch (error) { if (token === generation) status(error.message); }
-    finally { if (token === generation) { running = false; activeBatch.clear(); } }
+    finally { if (token === generation) { running = false; activeBatch.clear(); if (panel.dataset.state !== 'complete') setIndicator('idle'); } }
   }
   panel.addEventListener('click', e => {
     const action = e.target.dataset.action;

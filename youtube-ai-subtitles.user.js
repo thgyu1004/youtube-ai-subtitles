@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube AI 한국어 자막
 // @namespace    local.youtube.ai.ko
-// @version      0.1.9
+// @version      0.1.10
 // @updateURL    https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.meta.js
 // @downloadURL  https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.user.js
 // @author       J.S.Lee
@@ -73,6 +73,7 @@
     #jslee-ai-subtitles-panel[data-state=complete] .jslee-bar{background:#ffe477;animation:jslee-glow 2.4s ease-in-out infinite}
     #jslee-ai-subtitles-panel[data-state=complete] .jslee-state{color:#ffe477}
     #jslee-ai-subtitles-panel[data-collapsed=true]{width:36px!important;padding:8px!important}
+    html[dark] #jslee-ai-subtitles-panel[data-collapsed=true]{outline:1px solid rgba(255,255,255,.85);outline-offset:0}
     #jslee-ai-subtitles-panel[data-collapsed=true] .jslee-header>strong,#jslee-ai-subtitles-panel[data-collapsed=true] .jslee-state{display:none}
     @keyframes jslee-progress{0%,65%,100%{background:#fff;box-shadow:none}25%{background:#65d9ff;box-shadow:0 0 8px #65d9ff99}45%{background:#a48bff;box-shadow:0 0 8px #a48bff99}}
     @keyframes jslee-glow{0%,100%{box-shadow:0 0 3px #ffe47766;opacity:.8}50%{box-shadow:0 0 10px #ffe477cc,0 0 16px #ffc44466;opacity:1}}

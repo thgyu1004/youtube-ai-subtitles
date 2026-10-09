@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         YouTube AI 한국어 자막
 // @namespace    local.youtube.ai.ko
-// @version      0.1.8
+// @version      0.1.9
 // @updateURL    https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.meta.js
 // @downloadURL  https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.user.js
 // @author       J.S.Lee
-// @description  원어 자막을 Gemini로 번역하고 영상에 한국어 자막을 표시합니다.
+// @description  자~막 — J.S.Lee의 AI 문맥 자막 / JaMak by J.S.Lee. 영상 맥락을 반영한 한국어 자막.
 // @match        https://www.youtube.com/*
 // @grant        unsafeWindow
 // @grant        GM_getValue
@@ -34,8 +34,9 @@
   const panel = document.createElement('div');
   panel.style.cssText = 'position:fixed;right:18px;top:90px;z-index:9999;background:#171717;color:white;padding:12px;border-radius:12px;font:13px sans-serif;width:270px;box-shadow:0 4px 20px #0008';
   panel.append(
-    el('strong', {}, 'AI 한국어 자막'),
-    el('small', {style:'display:block;margin-top:4px;color:#aaa'}, '만든 사람: J.S.Lee'),
+    el('strong', {title:'자~막 — J.S.Lee의 AI 문맥 자막 / JaMak by J.S.Lee'}, '자~막'),
+    el('small', {style:'display:block;margin-top:4px;color:#aaa'}, 'J.S.Lee의 AI 문맥 자막'),
+    el('small', {style:'display:block;margin-top:3px;color:#888'}, 'JaMak by J.S.Lee'),
     el('div', {style:'margin:8px 0'},
       el('button', {'data-action':'start'}, '번역 시작 / 이어서'), ' ',
       el('button', {'data-action':'stop'}, '중지'), ' ',
@@ -116,7 +117,8 @@
     const dialog = document.createElement('dialog');
     dialog.style.cssText = 'background:#222;color:white;border:1px solid #666;border-radius:12px;max-width:440px;padding:24px;font:14px sans-serif';
     dialog.append(el('form', {method:'dialog'},
-      el('h3', {}, 'Gemini 번역 설정'),
+      el('h3', {}, '자~막 · 번역 설정'),
+      el('p', {}, 'JaMak by J.S.Lee — 영상 맥락을 반영한 한국어 자막'),
       el('p', {}, '무료/유료 여부는 Google API 프로젝트의 결제 설정에 따라 결정됩니다.'),
       el('label', {}, 'API 키 ', el('input', {name:'key',type:'password',autocomplete:'off',style:'width:95%'})),
       el('p', {}, el('label', {}, '모델 ID ', el('input', {name:'model',style:'width:95%'}))),

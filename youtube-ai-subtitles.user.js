@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube AI 한국어 자막
 // @namespace    local.youtube.ai.ko
-// @version      0.1.7
+// @version      0.1.8
 // @updateURL    https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.meta.js
 // @downloadURL  https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.user.js
 // @author       J.S.Lee
@@ -344,6 +344,29 @@
     if (action === 'settings') settings();
   });
   panel.querySelector('select').addEventListener('change', () => { stop(); cues = []; translations = {}; status('선택한 언어로 번역 시작을 누르세요.'); });
+  function subtitleBottom(playerHeight, controlsTop, captionTop) {
+    let bottom = playerHeight * .16;
+    if (controlsTop !== null) bottom = Math.max(bottom, playerHeight - controlsTop + 18);
+    if (captionTop !== null) bottom = Math.max(bottom, playerHeight - captionTop + 14);
+    return Math.min(bottom, Math.max(0, playerHeight - 80));
+  }
+  function updateSubtitlePosition(player) {
+    const bounds = player.getBoundingClientRect();
+    const visibleRect = node => {
+      const style = getComputedStyle(node), rect = node.getBoundingClientRect();
+      return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) > .05 && rect.width > 0 && rect.height > 0 ? rect : null;
+    };
+    const controls = player.querySelector('.ytp-chrome-bottom');
+    const controlsRect = controls && !player.classList.contains('ytp-autohide') ? visibleRect(controls) : null;
+    let captionTop = null;
+    for (const node of player.querySelectorAll('.caption-window')) {
+      const rect = visibleRect(node);
+      if (!rect || !node.textContent.trim() || rect.bottom <= bounds.top || rect.top >= bounds.bottom) continue;
+      // Avoid moving above user-positioned captions in the upper half of the video.
+      if (rect.top > bounds.top + bounds.height / 2) captionTop = Math.min(captionTop ?? Infinity,rect.top - bounds.top);
+    }
+    overlay.style.bottom = `${subtitleBottom(bounds.height,controlsRect ? controlsRect.top - bounds.top : null,captionTop)}px`;
+  }
   setInterval(() => {
     const id = videoId(); panel.style.display = id ? 'block' : 'none';
     if (id !== currentId) { stop(); currentId = id; cues = []; translations = {}; videoInfo.textContent = ''; panel.querySelector('select').replaceChildren(); status('번역 시작을 누르세요.'); }
@@ -353,7 +376,9 @@
       overlay?.remove(); overlay = document.createElement('div');
       overlay.style.cssText = 'position:absolute;left:5%;right:5%;bottom:16%;z-index:60;pointer-events:none;text-align:center;white-space:pre-line;font:600 clamp(16px,2.2vw,28px)/1.45 sans-serif;text-shadow:0 2px 3px black;color:white';
       player.append(overlay);
+      overlay.style.transition = 'bottom 180ms ease-out';
     }
+    updateSubtitlePosition(player);
     const time = player.querySelector('video')?.currentTime || 0;
     let low = 0, high = cues.length - 1, index = -1;
     while (low <= high) { const mid = (low+high) >> 1; if (cues[mid].start <= time) { index = mid; low = mid+1; } else high = mid-1; }

@@ -7,6 +7,11 @@ const translateSource = source.slice(source.indexOf('  async function translate(
 let reply;
 const sandbox = {URL, request:async () => reply};
 vm.createContext(sandbox);
+vm.runInContext(source.slice(source.indexOf('  function subtitleBottom('),source.indexOf('  function updateSubtitlePosition(')),sandbox);
+assert.equal(sandbox.subtitleBottom(800,null,null),128);
+assert.equal(sandbox.subtitleBottom(800,650,null),168);
+assert.equal(sandbox.subtitleBottom(800,700,590),224);
+assert.equal(sandbox.subtitleBottom(400,340,280),134);
 vm.runInContext(parseSource + translateSource, sandbox);
 const modelSource = source.slice(source.indexOf('  function normalizeModel('),source.indexOf('  async function tracks('));
 vm.runInContext(modelSource, sandbox);

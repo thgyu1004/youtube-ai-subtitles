@@ -10,6 +10,15 @@ vm.createContext(sandbox);
 vm.runInContext(parseSource + translateSource, sandbox);
 const modelSource = source.slice(source.indexOf('  function normalizeModel('),source.indexOf('  async function tracks('));
 vm.runInContext(modelSource, sandbox);
+const feedbackSource = source.slice(source.indexOf('  function cueFeedback('),source.indexOf('  function request('));
+vm.runInContext(feedbackSource, sandbox);
+const cue = {id:0,start:0,end:2};
+assert.match(sandbox.cueFeedback(cue,1,'',true,true),/우선 번역 중/);
+assert.match(sandbox.cueFeedback(cue,1,'',true,false),/요청이 끝나면/);
+assert.match(sandbox.cueFeedback(cue,1,'',false,false),/이어서/);
+assert.equal(sandbox.cueFeedback(cue,1,'번역 완료',true,false),'');
+assert.equal(sandbox.cueFeedback(cue,2,'',true,false),'');
+assert.equal(sandbox.cueFeedback(undefined,1,'',true,false),'');
 assert.equal(sandbox.normalizeModel(' models/gemini-example '),'gemini-example');
 assert.equal(sandbox.eligibleModels([
   {name:'models/gemini-example',supportedGenerationMethods:['generateContent']},

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube AI 한국어 자막
 // @namespace    local.youtube.ai.ko
-// @version      0.1.3
+// @version      0.1.4
 // @updateURL    https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.meta.js
 // @downloadURL  https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.user.js
 // @author       J.S.Lee
@@ -30,6 +30,7 @@
   const DEFAULT_MODEL = 'gemini-2.5-flash';
   let generation = 0, running = false, currentId = '', cues = [], translations = {}, overlay;
   const pending = new Set();
+  let activeBatch = new Set();
   const panel = document.createElement('div');
   panel.style.cssText = 'position:fixed;right:18px;top:90px;z-index:9999;background:#171717;color:white;padding:12px;border-radius:12px;font:13px sans-serif;width:270px;box-shadow:0 4px 20px #0008';
   panel.append(
@@ -43,10 +44,18 @@
     el('label', {style:'display:block;margin:8px 0'}, el('input', {type:'checkbox',checked:''}), ' 원어 함께 표시'),
     el('div', {role:'status',style:'line-height:1.5;white-space:pre-wrap'}, '원어 자막이 있는 영상에서 시작하세요.'));
   panel.id = 'jslee-ai-subtitles-panel';
+  const playbackFeedback = el('div', {role:'status',style:'margin-top:8px;color:#ffd580;line-height:1.5'});
+  panel.append(playbackFeedback);
   document.body.append(panel);
   const status = message => { panel.querySelector('[role=status]').textContent = message; };
   const videoId = () => new URL(location.href).searchParams.get('v');
-  const stop = () => { generation++; running = false; for (const req of pending) req.abort(); pending.clear(); };
+  const stop = () => { generation++; running = false; activeBatch.clear(); for (const req of pending) req.abort(); pending.clear(); };
+  function cueFeedback(cue, time, translated, isRunning, isActive) {
+    if (!cue || time >= cue.end || translated) return '';
+    if (!isRunning) return '이 구간은 아직 번역되지 않았습니다.\n번역 시작 / 이어서를 눌러주세요.';
+    return isActive ? '이 구간을 우선 번역 중입니다. 잠시 기다려주세요.' :
+      '이 구간은 아직 번역되지 않았습니다.\n진행 중인 요청이 끝나면 현재 위치부터 번역합니다.';
+  }
   function request(url, options = {}) {
     return new Promise((resolve, reject) => {
       let req;
@@ -190,6 +199,19 @@
     const key = GM_getValue('apiKey', ''), model = normalizeModel(GM_getValue('model', DEFAULT_MODEL));
     if (!key) { settings(); return; }
     running = true;
+    const startedAt = Date.now(), samples = [];
+    const progress = () => {
+      const completed = Object.keys(translations).length;
+      const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+      let estimate = '예상 시간 계산 중…';
+      if (samples.length) {
+        const secondsPerCue = samples.reduce((sum,s) => sum + s.seconds,0) / samples.reduce((sum,s) => sum + s.count,0);
+        const remainingSeconds = Math.ceil((cues.length - completed) * secondsPerCue);
+        const finish = new Date(Date.now() + remainingSeconds * 1000).toLocaleTimeString('ko-KR', {hour:'2-digit',minute:'2-digit'});
+        estimate = `남은 예상 시간 약 ${Math.floor(remainingSeconds / 60)}분 ${remainingSeconds % 60}초\n완료 예상 ${finish} · API 속도에 따라 변동`;
+      }
+      return `번역 중… ${completed}/${cues.length}개\n이번 실행 ${Math.floor(elapsed/60)}분 ${elapsed%60}초\n${estimate}`;
+    };
     try {
       status('원어 자막을 찾는 중…');
       const available = await tracks(id);
@@ -221,17 +243,22 @@
         if (!remaining.length) break;
         const first = remaining.find(c => c.end >= time) || remaining[0];
         const batch = cues.slice(first.id, first.id + 40).filter(c => typeof translations[c.id] !== 'string');
-        status(`번역 중… ${Object.keys(translations).length}/${cues.length}개\n현재 재생 구간부터 번역합니다.`);
+        activeBatch = new Set(batch.map(c => c.id));
+        status(progress());
+        const requestStarted = Date.now();
         const rows = await translate(batch, cues.slice(Math.max(0,first.id-8),first.id).map(c => c.text), key, model);
         if (token !== generation) return;
         for (const row of rows) translations[row.id] = row.text;
+        activeBatch.clear();
+        samples.push({count:batch.length,seconds:(Date.now() - requestStarted)/1000 + 4.5});
+        if (samples.length > 5) samples.shift();
         GM_setValue(cacheKey, translations);
-        status(`번역됨 ${Object.keys(translations).length}/${cues.length}개`);
+        status(progress());
         await new Promise(resolve => setTimeout(resolve, 4500));
       }
-      if (token === generation) status(`번역 완료 · ${cues.length}개 자막`);
+      if (token === generation) status(`번역 완료 · ${cues.length}개 자막\n이번 실행 소요 ${Math.round((Date.now()-startedAt)/1000)}초`);
     } catch (error) { if (token === generation) status(error.message); }
-    finally { if (token === generation) running = false; }
+    finally { if (token === generation) { running = false; activeBatch.clear(); } }
   }
   panel.addEventListener('click', e => {
     const action = e.target.dataset.action;
@@ -244,7 +271,7 @@
     const id = videoId(); panel.style.display = id ? 'block' : 'none';
     if (id !== currentId) { stop(); currentId = id; cues = []; translations = {}; panel.querySelector('select').replaceChildren(); status('번역 시작을 누르세요.'); }
     const player = document.querySelector('#movie_player');
-    if (!player) return;
+    if (!player) { playbackFeedback.textContent = ''; return; }
     if (!overlay || overlay.parentNode !== player) {
       overlay?.remove(); overlay = document.createElement('div');
       overlay.style.cssText = 'position:absolute;left:5%;right:5%;bottom:16%;z-index:60;pointer-events:none;text-align:center;white-space:pre-line;font:600 clamp(16px,2.2vw,28px)/1.45 sans-serif;text-shadow:0 2px 3px black;color:white';
@@ -255,6 +282,9 @@
     while (low <= high) { const mid = (low+high) >> 1; if (cues[mid].start <= time) { index = mid; low = mid+1; } else high = mid-1; }
     const cue = cues[index];
     const translated = cue && time < cue.end ? translations[cue.id] : '';
-    overlay.textContent = translated ? `${translated}${panel.querySelector('input[type=checkbox]').checked ? '\n' + cue.text : ''}` : '';
+    const feedback = cueFeedback(cue, time, translated, running, activeBatch.has(cue?.id));
+    if (playbackFeedback.textContent !== feedback) playbackFeedback.textContent = feedback;
+    overlay.style.color = feedback ? '#ffd580' : 'white';
+    overlay.textContent = translated ? `${translated}${panel.querySelector('input[type=checkbox]').checked ? '\n' + cue.text : ''}` : feedback;
   }, 150);
 })();

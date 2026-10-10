@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube AI 한국어 자막
 // @namespace    local.youtube.ai.ko
-// @version      0.1.13
+// @version      0.1.14
 // @updateURL    https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.meta.js
 // @downloadURL  https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.user.js
 // @author       J.S.Lee
@@ -116,21 +116,23 @@
   }
   function settings() {
     const dialog = document.createElement('dialog');
-    dialog.style.cssText = 'background:#222;color:white;border:1px solid #666;border-radius:12px;max-width:440px;padding:24px;font:14px sans-serif';
+    dialog.style.cssText = 'background:#222;color:white;border:1px solid #666;border-radius:12px;width:440px;max-width:calc(100vw - 64px);max-height:85vh;overflow:auto;padding:24px;font:14px/1.6 sans-serif;word-break:keep-all;overflow-wrap:anywhere';
+    const paragraph = {style:'margin:12px 0;white-space:pre-line'};
     dialog.append(el('form', {method:'dialog'},
-      el('h3', {}, '자~막 · 번역 설정'),
-      el('p', {}, 'JaMak by J.S.Lee — 영상 맥락을 반영한 한국어 자막'),
-      el('p', {}, '무료/유료 여부는 Google API 프로젝트의 결제 설정에 따라 결정됩니다.', el('br'), el('span', {style:'display:inline-block;white-space:nowrap;margin-top:4px'}, '(무료 가능)')),
+      el('h3', {style:'margin:0 0 8px'}, '자~막 · 번역 설정'),
+      el('p', paragraph, 'JaMak by J.S.Lee\n영상 맥락을 반영한 한국어 자막'),
+      el('p', paragraph, '무료/유료 여부는 Google API 프로젝트의\n결제 설정에 따라 결정됩니다.', el('br'), el('span', {style:'display:inline-block;white-space:nowrap;margin-top:4px;color:#ffe477'}, '(무료 가능)')),
       el('label', {}, 'API 키 ',
         el('a', {href:'https://aistudio.google.com/api-keys',target:'_blank',rel:'noopener noreferrer',style:'color:#8dd8ff;margin-left:8px;font-size:13px'}, 'API 키 발급 ↗'),
-        el('input', {name:'key',type:'password',autocomplete:'off',style:'display:block;width:95%;margin-top:6px'})),
-      el('p', {}, el('label', {}, '모델 ID ', el('input', {name:'model',style:'width:95%'}))),
-      el('button', {type:'button',id:'load-models'}, '사용 가능한 모델 불러오기'),
+        el('input', {name:'key',type:'password',autocomplete:'off',style:'display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:7px'})),
+      el('p', paragraph, el('label', {}, '모델 ID ', el('input', {name:'model',style:'display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:7px'}))),
+      el('button', {type:'button',id:'load-models',style:'padding:6px 10px'}, '사용 가능한 모델 불러오기'),
       el('select', {id:'models',style:'display:none;width:100%;margin-top:8px','aria-label':'번역 모델 선택'}),
-      el('p', {id:'model-status',role:'status'}, '목록 조회는 번역 요청 없이 진행합니다. 목록에 있어도 무료 할당량이나 번역 형식 지원은 별도입니다.'),
-      el('p', {}, '키는 Tampermonkey 저장소에 보관됩니다. 원어 자막은 번역을 위해 Google에 전송됩니다.'),
-      el('button', {value:'save'}, '저장'), ' ', el('button', {value:'cancel'}, '취소'), ' ',
-      el('button', {type:'button',id:'clear'}, '번역 캐시 삭제')));
+      el('p', {id:'model-status',role:'status',style:'margin:10px 0 16px;white-space:pre-line;color:#bbb'}, '목록 조회는 번역 요청 없이 진행합니다.\n무료 할당량과 번역 형식 지원은 별도입니다.'),
+      el('p', paragraph, '키는 Tampermonkey 저장소에 보관됩니다.\n원어 자막과 영상 정보는 번역을 위해\nGoogle에 전송됩니다.'),
+      el('div', {style:'display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid #555'},
+        el('button', {value:'save',style:'padding:6px 14px'}, '저장'), el('button', {value:'cancel',style:'padding:6px 14px'}, '취소'),
+        el('button', {type:'button',id:'clear',style:'padding:6px 10px;margin-left:auto'}, '번역 캐시 삭제'))));
     dialog.querySelector('[name=key]').value = GM_getValue('apiKey', '');
     dialog.querySelector('[name=model]').value = GM_getValue('model', DEFAULT_MODEL);
     let closed = false;
@@ -147,7 +149,7 @@
         modelSelect.replaceChildren(el('option', {value:''}, '모델을 선택하세요'));
         for (const model of models) modelSelect.append(el('option', {value:model.id}, `${model.label} (${model.id})`));
         modelSelect.style.display = 'block';
-        message.textContent = models.length ? '목록에서 모델을 선택하고 저장하세요. 무료 여부/할당량은 AI Studio에서 확인하세요.' : '텍스트 생성 모델을 찾지 못했습니다.';
+        message.textContent = models.length ? '목록에서 모델을 선택하고 저장하세요.\n무료 여부와 할당량은 AI Studio에서 확인하세요.' : '텍스트 생성 모델을 찾지 못했습니다.';
       } catch (error) { if (!closed) message.textContent = error.message; }
       finally { button.disabled = false; }
     };

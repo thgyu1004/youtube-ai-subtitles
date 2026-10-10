@@ -5,7 +5,7 @@ const source = fs.readFileSync(__dirname + '/youtube-ai-subtitles.user.js', 'utf
 const parseSource = source.slice(source.indexOf('  function parseCues('), source.indexOf('  async function translate('));
 const translateSource = source.slice(source.indexOf('  async function translate('), source.indexOf('  async function start('));
 let reply;
-const sandbox = {URL, request:async () => reply};
+const sandbox = {URL, LANGUAGES:{ko:'한국어',en:'영어',es:'스페인어'}, request:async () => reply};
 vm.createContext(sandbox);
 vm.runInContext(source.slice(source.indexOf('  function subtitleBottom('),source.indexOf('  function updateSubtitlePosition(')),sandbox);
 assert.equal(sandbox.subtitleBottom(800,null,null),128);

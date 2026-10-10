@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube AI 한국어 자막
 // @namespace    local.youtube.ai.ko
-// @version      0.1.12
+// @version      0.1.13
 // @updateURL    https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.meta.js
 // @downloadURL  https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.user.js
 // @author       J.S.Lee
@@ -120,7 +120,7 @@
     dialog.append(el('form', {method:'dialog'},
       el('h3', {}, '자~막 · 번역 설정'),
       el('p', {}, 'JaMak by J.S.Lee — 영상 맥락을 반영한 한국어 자막'),
-      el('p', {}, '무료/유료 여부는 Google API 프로젝트의 결제 설정에 따라 결정됩니다. (무료 가능)'),
+      el('p', {}, '무료/유료 여부는 Google API 프로젝트의 결제 설정에 따라 결정됩니다.', el('br'), el('span', {style:'display:inline-block;white-space:nowrap;margin-top:4px'}, '(무료 가능)')),
       el('label', {}, 'API 키 ',
         el('a', {href:'https://aistudio.google.com/api-keys',target:'_blank',rel:'noopener noreferrer',style:'color:#8dd8ff;margin-left:8px;font-size:13px'}, 'API 키 발급 ↗'),
         el('input', {name:'key',type:'password',autocomplete:'off',style:'display:block;width:95%;margin-top:6px'})),

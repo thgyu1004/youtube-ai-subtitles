@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube AI 한국어 자막
 // @namespace    local.youtube.ai.ko
-// @version      0.1.20
+// @version      0.1.21
 // @updateURL    https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.meta.js
 // @downloadURL  https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.user.js
 // @author       J.S.Lee
@@ -111,6 +111,7 @@
   }
   function setCollapsed(collapsed) {
     panel.dataset.collapsed = String(collapsed); panelBody.hidden = collapsed;
+    dockPanel();
     toggleButton.setAttribute('aria-expanded',String(!collapsed));
     setIndicator(panel.dataset.state || 'idle');
   }
@@ -132,8 +133,8 @@
     // When no gap remains, keep a compact toggle adjacent to the native buttons.
     const compact = available < 110;
     panel.dataset.compact = String(compact);
-    panelBody.hidden = panel.dataset.collapsed === 'true' || compact;
     panel.style.width = `${compact ? 40 : width}px`;
+    panelBody.hidden = panel.dataset.collapsed === 'true' || compact;
     panel.style.right = `${Math.max(8, innerWidth - edge.left + 8)}px`;
     panel.style.top = `${bar.top + (bar.height - 40) / 2}px`;
     toggleButton.setAttribute('aria-expanded',String(!panelBody.hidden));

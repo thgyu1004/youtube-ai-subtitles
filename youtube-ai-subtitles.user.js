@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube AI 한국어 자막
 // @namespace    local.youtube.ai.ko
-// @version      0.1.17
+// @version      0.1.18
 // @updateURL    https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.meta.js
 // @downloadURL  https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.user.js
 // @author       J.S.Lee
@@ -69,25 +69,30 @@
     #jslee-ai-subtitles-panel .jslee-bar{display:block;width:22px;height:3px;border-radius:3px;background:white}
     #jslee-ai-subtitles-panel .jslee-state{margin-left:auto;font-size:11px;color:#aaa;white-space:nowrap}
     #jslee-ai-panel-body{margin-top:4px}
-    #jslee-ai-subtitles-panel[data-docked=true]{display:flex!important;align-items:center;gap:8px;box-sizing:border-box;height:48px;padding:4px 8px;background:#171717;overflow:hidden}
+    #jslee-ai-subtitles-panel[data-docked=true]{display:flex!important;align-items:center;gap:8px;box-sizing:border-box;height:84px;padding:6px 8px;background:#171717;overflow:hidden}
     #jslee-ai-subtitles-panel[data-docked=true] .jslee-header{gap:5px;flex-shrink:0}
     #jslee-ai-subtitles-panel[data-docked=true] .jslee-state{display:none}
-    #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body:not([hidden]){display:flex;align-items:center;gap:10px;margin:0;min-width:0;overflow-x:auto;overflow-y:hidden;white-space:nowrap;height:40px;scrollbar-width:thin}
+    #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body:not([hidden]){display:flex;flex-wrap:wrap;align-content:flex-start;align-items:center;gap:6px 10px;margin:0;min-width:0;overflow-x:hidden;overflow-y:auto;white-space:normal;height:72px;scrollbar-width:thin}
     #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>small{display:none!important}
-    #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>div,#jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>label{flex-shrink:0;margin:0!important;white-space:nowrap!important;max-height:36px!important}
+    #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>div,#jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>label{margin:0!important;white-space:normal!important;max-height:none!important;max-width:100%;overflow-wrap:anywhere}
     #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>label{display:flex!important;align-items:center;gap:5px;font-size:11px}
     #jslee-ai-subtitles-panel[data-docked=true] select{width:150px!important;display:inline-block!important}
     #jslee-ai-subtitles-panel[data-docked=true] button[data-action]{padding:4px 6px;white-space:nowrap}
-    #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>[role=status]{max-width:260px;overflow:auto;font-size:11px;white-space:pre-line!important}
+    #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>[role=status]{width:100%;max-width:none;overflow:visible;font-size:11px;white-space:pre-line!important}
     #jslee-ai-subtitles-panel[data-state=running] .jslee-bar{animation:jslee-progress 1.2s infinite}
     #jslee-ai-subtitles-panel[data-state=running] .jslee-bar:nth-child(2){animation-delay:.2s}
     #jslee-ai-subtitles-panel[data-state=running] .jslee-bar:nth-child(3){animation-delay:.4s}
     #jslee-ai-subtitles-panel[data-state=running] .jslee-state{color:#75ddff}
     #jslee-ai-subtitles-panel[data-state=complete] .jslee-bar{background:#ffe477;animation:jslee-glow 2.4s ease-in-out infinite}
     #jslee-ai-subtitles-panel[data-state=complete] .jslee-state{color:#ffe477}
-    #jslee-ai-subtitles-panel[data-collapsed=true]{width:36px!important;padding:8px!important}
+    #jslee-ai-subtitles-panel[data-collapsed=true]{width:40px!important;height:40px!important;padding:2px!important;box-sizing:border-box}
     html[dark] #jslee-ai-subtitles-panel[data-collapsed=true]{outline:1px solid rgba(255,255,255,.85);outline-offset:0}
     #jslee-ai-subtitles-panel[data-collapsed=true] .jslee-header>strong,#jslee-ai-subtitles-panel[data-collapsed=true] .jslee-state{display:none}
+    #jslee-ai-subtitles-panel[data-docked=true]{align-items:flex-start}
+    #jslee-ai-subtitles-panel[data-docked=true][data-collapsed=true],#jslee-ai-subtitles-panel[data-docked=true][data-compact=true]{height:40px!important;width:40px!important;padding:2px!important;border-radius:10px}
+    #jslee-ai-subtitles-panel[data-compact=true] .jslee-header>strong{display:none}
+    #jslee-ai-subtitles-panel[data-docked=true] .jslee-toggle{box-sizing:border-box}
+    html[dark] #jslee-ai-subtitles-panel[data-docked=true][data-collapsed=true]{outline-color:rgba(255,255,255,.55)}
     @keyframes jslee-progress{0%,65%,100%{background:#fff;box-shadow:none}25%{background:#65d9ff;box-shadow:0 0 8px #65d9ff99}45%{background:#a48bff;box-shadow:0 0 8px #a48bff99}}
     @keyframes jslee-glow{0%,100%{box-shadow:0 0 3px #ffe47766;opacity:.8}50%{box-shadow:0 0 10px #ffe477cc,0 0 16px #ffc44466;opacity:1}}
     @media(prefers-reduced-motion:reduce){#jslee-ai-subtitles-panel .jslee-bar{animation:none!important}#jslee-ai-subtitles-panel[data-state=running] .jslee-bar{background:#75ddff}}
@@ -118,13 +123,14 @@
     panel.style.visibility = '';
     panel.dataset.docked = 'true';
     const available = Math.max(0, edge.left - search.right - 16);
-    const width = panel.dataset.collapsed === 'true' ? 52 : Math.min(640, available);
+    const width = panel.dataset.collapsed === 'true' ? 40 : Math.min(640, available);
     // When no gap remains, keep a compact toggle adjacent to the native buttons.
     const compact = available < 110;
+    panel.dataset.compact = String(compact);
     panelBody.hidden = panel.dataset.collapsed === 'true' || compact;
-    panel.style.width = `${compact ? 52 : width}px`;
+    panel.style.width = `${compact ? 40 : width}px`;
     panel.style.right = `${Math.max(8, innerWidth - edge.left + 8)}px`;
-    panel.style.top = `${bar.top + (bar.height - 48) / 2}px`;
+    panel.style.top = `${bar.top + (bar.height - 40) / 2}px`;
     toggleButton.setAttribute('aria-expanded',String(!panelBody.hidden));
   }
   window.addEventListener('resize', dockPanel);

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube AI 한국어 자막
 // @namespace    local.youtube.ai.ko
-// @version      0.1.16
+// @version      0.1.17
 // @updateURL    https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.meta.js
 // @downloadURL  https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.user.js
 // @author       J.S.Lee
@@ -69,6 +69,16 @@
     #jslee-ai-subtitles-panel .jslee-bar{display:block;width:22px;height:3px;border-radius:3px;background:white}
     #jslee-ai-subtitles-panel .jslee-state{margin-left:auto;font-size:11px;color:#aaa;white-space:nowrap}
     #jslee-ai-panel-body{margin-top:4px}
+    #jslee-ai-subtitles-panel[data-docked=true]{display:flex!important;align-items:center;gap:8px;box-sizing:border-box;height:48px;padding:4px 8px;background:#171717;overflow:hidden}
+    #jslee-ai-subtitles-panel[data-docked=true] .jslee-header{gap:5px;flex-shrink:0}
+    #jslee-ai-subtitles-panel[data-docked=true] .jslee-state{display:none}
+    #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body:not([hidden]){display:flex;align-items:center;gap:10px;margin:0;min-width:0;overflow-x:auto;overflow-y:hidden;white-space:nowrap;height:40px;scrollbar-width:thin}
+    #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>small{display:none!important}
+    #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>div,#jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>label{flex-shrink:0;margin:0!important;white-space:nowrap!important;max-height:36px!important}
+    #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>label{display:flex!important;align-items:center;gap:5px;font-size:11px}
+    #jslee-ai-subtitles-panel[data-docked=true] select{width:150px!important;display:inline-block!important}
+    #jslee-ai-subtitles-panel[data-docked=true] button[data-action]{padding:4px 6px;white-space:nowrap}
+    #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>[role=status]{max-width:260px;overflow:auto;font-size:11px;white-space:pre-line!important}
     #jslee-ai-subtitles-panel[data-state=running] .jslee-bar{animation:jslee-progress 1.2s infinite}
     #jslee-ai-subtitles-panel[data-state=running] .jslee-bar:nth-child(2){animation-delay:.2s}
     #jslee-ai-subtitles-panel[data-state=running] .jslee-bar:nth-child(3){animation-delay:.4s}
@@ -97,6 +107,30 @@
   toggleButton.onclick = () => { setCollapsed(!panelBody.hidden); GM_setValue('panelCollapsed',panelBody.hidden); };
   setCollapsed(GM_getValue('panelCollapsed',false));
   document.body.append(panel);
+  function dockPanel() {
+    const masthead = document.querySelector('ytd-masthead');
+    const end = masthead?.querySelector('#end');
+    const center = masthead?.querySelector('#center');
+    if (!end || !center) return;
+    const edge = end.getBoundingClientRect(), search = center.getBoundingClientRect();
+    const bar = masthead.getBoundingClientRect();
+    if (bar.height < 40 || document.fullscreenElement) { panel.style.visibility = 'hidden'; return; }
+    panel.style.visibility = '';
+    panel.dataset.docked = 'true';
+    const available = Math.max(0, edge.left - search.right - 16);
+    const width = panel.dataset.collapsed === 'true' ? 52 : Math.min(640, available);
+    // When no gap remains, keep a compact toggle adjacent to the native buttons.
+    const compact = available < 110;
+    panelBody.hidden = panel.dataset.collapsed === 'true' || compact;
+    panel.style.width = `${compact ? 52 : width}px`;
+    panel.style.right = `${Math.max(8, innerWidth - edge.left + 8)}px`;
+    panel.style.top = `${bar.top + (bar.height - 48) / 2}px`;
+    toggleButton.setAttribute('aria-expanded',String(!panelBody.hidden));
+  }
+  window.addEventListener('resize', dockPanel);
+  document.addEventListener('yt-navigate-finish', dockPanel);
+  setInterval(dockPanel, 500);
+  dockPanel();
   const status = message => { panel.querySelector('[role=status]').textContent = message; if (message.startsWith('번역 완료')) setIndicator('complete'); };
   const videoId = () => new URL(location.href).searchParams.get('v');
   const stop = () => { generation++; running = false; setIndicator('idle'); activeBatch.clear(); for (const req of pending) req.abort(); pending.clear(); };

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube AI 한국어 자막
 // @namespace    local.youtube.ai.ko
-// @version      0.1.18
+// @version      0.1.19
 // @updateURL    https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.meta.js
 // @downloadURL  https://raw.githubusercontent.com/thgyu1004/youtube-ai-subtitles/main/youtube-ai-subtitles.user.js
 // @author       J.S.Lee
@@ -66,15 +66,15 @@
     #jslee-ai-subtitles-panel .jslee-toggle{display:flex;flex-direction:column;justify-content:center;gap:5px;width:36px;height:36px;padding:7px;background:transparent;border:0;border-radius:8px;cursor:pointer;flex-shrink:0}
     #jslee-ai-subtitles-panel .jslee-toggle:hover{background:#ffffff15}
     #jslee-ai-subtitles-panel .jslee-toggle:focus-visible{outline:2px solid #8dd8ff}
-    #jslee-ai-subtitles-panel .jslee-bar{display:block;width:22px;height:3px;border-radius:3px;background:white}
+    #jslee-ai-subtitles-panel .jslee-bar{display:block;width:22px;height:3px;border-radius:3px;background:#b49aff}
     #jslee-ai-subtitles-panel .jslee-state{margin-left:auto;font-size:11px;color:#aaa;white-space:nowrap}
     #jslee-ai-panel-body{margin-top:4px}
-    #jslee-ai-subtitles-panel[data-docked=true]{display:flex!important;align-items:center;gap:8px;box-sizing:border-box;height:84px;padding:6px 8px;background:#171717;overflow:hidden}
+    #jslee-ai-subtitles-panel[data-docked=true]{display:flex!important;align-items:center;gap:8px;box-sizing:border-box;height:auto;min-height:112px;padding:8px;background:#171717;overflow:hidden}
     #jslee-ai-subtitles-panel[data-docked=true] .jslee-header{gap:5px;flex-shrink:0}
     #jslee-ai-subtitles-panel[data-docked=true] .jslee-state{display:none}
-    #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body:not([hidden]){display:flex;flex-wrap:wrap;align-content:flex-start;align-items:center;gap:6px 10px;margin:0;min-width:0;overflow-x:hidden;overflow-y:auto;white-space:normal;height:72px;scrollbar-width:thin}
+    #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body:not([hidden]){display:flex;flex-wrap:wrap;align-content:flex-start;align-items:center;gap:6px 10px;margin:0;min-width:0;overflow:visible;white-space:normal;height:auto;min-height:96px}
     #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>small{display:none!important}
-    #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>div,#jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>label{margin:0!important;white-space:normal!important;max-height:none!important;max-width:100%;overflow-wrap:anywhere}
+    #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>div,#jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>label{margin:0!important;white-space:normal!important;max-height:none!important;max-width:100%;overflow:visible!important;overflow-wrap:anywhere}
     #jslee-ai-subtitles-panel[data-docked=true] #jslee-ai-panel-body>label{display:flex!important;align-items:center;gap:5px;font-size:11px}
     #jslee-ai-subtitles-panel[data-docked=true] select{width:150px!important;display:inline-block!important}
     #jslee-ai-subtitles-panel[data-docked=true] button[data-action]{padding:4px 6px;white-space:nowrap}
@@ -90,6 +90,7 @@
     #jslee-ai-subtitles-panel[data-collapsed=true] .jslee-header>strong,#jslee-ai-subtitles-panel[data-collapsed=true] .jslee-state{display:none}
     #jslee-ai-subtitles-panel[data-docked=true]{align-items:flex-start}
     #jslee-ai-subtitles-panel[data-docked=true][data-collapsed=true],#jslee-ai-subtitles-panel[data-docked=true][data-compact=true]{height:40px!important;width:40px!important;padding:2px!important;border-radius:10px}
+    #jslee-ai-subtitles-panel[data-docked=true][data-collapsed=true],#jslee-ai-subtitles-panel[data-docked=true][data-compact=true]{min-height:40px}
     #jslee-ai-subtitles-panel[data-compact=true] .jslee-header>strong{display:none}
     #jslee-ai-subtitles-panel[data-docked=true] .jslee-toggle{box-sizing:border-box}
     html[dark] #jslee-ai-subtitles-panel[data-docked=true][data-collapsed=true]{outline-color:rgba(255,255,255,.55)}
